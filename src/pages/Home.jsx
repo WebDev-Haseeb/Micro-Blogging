@@ -1,30 +1,58 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import BlogPost from '../components/BlogPost';
 import Loading from '../components/Loading';
-import { getAllPosts } from '../firebase';
+import { getPaginatedPosts } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [lastDoc, setLastDoc] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
   const { currentUser } = useAuth();
+  const postsPerPage = 10;
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        const fetchedPosts = await getAllPosts();
-        setPosts(fetchedPosts);
+        const result = await getPaginatedPosts(null, postsPerPage);
+        setPosts(result.posts);
+        setLastDoc(result.lastDoc);
+        setHasMore(result.posts.length === postsPerPage);
       } catch (error) {
         console.error("Error fetching posts:", error);
       } finally {
         setLoading(false);
+        setInitialLoad(false);
       }
     };
 
     fetchPosts();
   }, []);
+
+  const loadMorePosts = async () => {
+    if (!hasMore || loadingMore) return;
+    
+    try {
+      setLoadingMore(true);
+      const result = await getPaginatedPosts(lastDoc, postsPerPage);
+      
+      if (result.posts.length > 0) {
+        setPosts(prevPosts => [...prevPosts, ...result.posts]);
+        setLastDoc(result.lastDoc);
+      }
+      
+      setHasMore(result.posts.length === postsPerPage);
+    } catch (error) {
+      console.error("Error loading more posts:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-8">
@@ -37,14 +65,47 @@ const Home = () => {
         <span className="gradient-text">Latest</span> Posts
       </motion.h1>
 
-      {loading ? (
+      {initialLoad && loading ? (
         <Loading />
       ) : posts.length > 0 ? (
-        <div>
-          {posts.map((post) => (
-            <BlogPost key={post.id} post={post} />
-          ))}
-        </div>
+        <>
+          <div className="space-y-4">
+            <AnimatePresence>
+              {posts.map((post, index) => (
+                <motion.div
+                  key={post.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                >
+                  <BlogPost post={post} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+          
+          {/* Load more posts button */}
+          {hasMore && (
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={loadMorePosts}
+                disabled={loadingMore}
+                className="btn-secondary px-6 py-2"
+              >
+                {loadingMore ? (
+                  <div className="flex items-center">
+                    <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Loading...
+                  </div>
+                ) : "Load more posts"}
+              </button>
+            </div>
+          )}
+        </>
       ) : (
         <motion.div 
           className="flex h-[40vh] flex-col items-center justify-center rounded-lg bg-gray-50 p-8 text-center dark:bg-gray-800/50"
@@ -78,4 +139,4 @@ const Home = () => {
   );
 };
 
-export default Home; 
+export default Home;

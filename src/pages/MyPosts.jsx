@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getUserPosts } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import BlogPost from '../components/BlogPost';
@@ -42,10 +42,20 @@ const MyPosts = () => {
       {loading ? (
         <Loading />
       ) : posts.length > 0 ? (
-        <div>
-          {posts.map((post) => (
-            <BlogPost key={post.id} post={post} />
-          ))}
+        <div className="space-y-4">
+          <AnimatePresence>
+            {posts.map((post, index) => (
+              <motion.div
+                key={post.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+              >
+                <BlogPost post={post} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       ) : (
         <motion.div 
@@ -98,4 +108,4 @@ const MyPosts = () => {
   );
 };
 
-export default MyPosts; 
+export default MyPosts;
