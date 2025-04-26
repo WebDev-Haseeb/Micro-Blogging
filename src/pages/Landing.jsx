@@ -54,7 +54,7 @@ const Landing = () => {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
-                Welcome to <span className="gradient-text">Lenovo</span> MicroBlog
+                Welcome to <span className="gradient-text">Smart</span> MicroBlog
               </h1>
               <p className="mt-6 text-xl leading-8 text-gray-600 dark:text-gray-300">
                 Share your thoughts in 300 characters or less. Get instant AI-powered insights on your writing, and connect with others.
@@ -115,7 +115,7 @@ const Landing = () => {
                 </div>
               </div>
               <div className="mt-4 text-gray-700 dark:text-gray-300">
-                Just got my new Lenovo laptop and I'm loving it! The keyboard feels amazing and the performance is stellar. Can't wait to use it for my next project. #NewTech #Productivity
+                Just got my new Smart laptop and I'm loving it! The keyboard feels amazing and the performance is stellar. Can't wait to use it for my next project. #NewTech #Productivity
               </div>
               <div className="mt-4 flex justify-between border-t border-gray-100 pt-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
                 <div className="flex items-center gap-1">

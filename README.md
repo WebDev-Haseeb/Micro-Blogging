@@ -1,4 +1,4 @@
-# Lenovo MicroBlog
+# Smart MicroBlog
 
 A beautiful and highly responsive micro-blogging website using React (frontend) and Firebase (backend).
 

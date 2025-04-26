@@ -9,13 +9,14 @@ import Home from './pages/Home';
 import NewPost from './pages/NewPost';
 import MyPosts from './pages/MyPosts';
 import NotFound from './pages/NotFound';
+import AlertDemo from './pages/AlertDemo';
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
   // Add meta tags for PWA
   useEffect(() => {
-    document.title = 'Lenovo MicroBlog';
+    document.title = 'Smart MicroBlog';
     const metaDescription = document.createElement('meta');
     metaDescription.name = 'description';
     metaDescription.content = 'Share your thoughts in 300 characters or less with AI-powered insights';
@@ -50,13 +51,14 @@ function App() {
                         </AuthRequired>
                       } 
                     />
+                    <Route path="/alert-demo" element={<AlertDemo />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </AnimatePresence>
               </main>
               <footer className="border-t border-gray-200 bg-white py-6 text-center text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400">
                 <div className="container mx-auto px-4">
-                  <p>© {new Date().getFullYear()} Lenovo MicroBlog | Built with React & Firebase</p>
+                  <p>© {new Date().getFullYear()} Smart MicroBlog | Built with React & Firebase</p>
                 </div>
               </footer>
             </div>

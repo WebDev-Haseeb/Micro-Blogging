@@ -47,4 +47,26 @@
   .gradient-text {
     @apply bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent;
   }
+  
+  /* Alert styles */
+  .alert-container {
+    @apply max-w-sm w-full overflow-hidden;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+  }
+  
+  /* For focus-visible users - accessibility */
+  .focus-visible:focus-visible {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+  }
+}
+
+/* Added for alert system - ensures alerts don't block interactive elements */
+[role="dialog"],
+[role="alertdialog"] {
+  z-index: 50;
+}
+
+/* Make alert containers respond to mouse interactions */
+.pointer-events-auto {
+  pointer-events: auto !important;
 }
