@@ -111,7 +111,7 @@ const Landing = () => {
                 <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600" />
                 <div>
                   <div className="text-sm font-semibold text-gray-900 dark:text-white">John Doe</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">5 minutes ago</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">less than a minute ago</div>
                 </div>
               </div>
               <div className="mt-4 text-gray-700 dark:text-gray-300">

@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
@@ -10,7 +11,7 @@ const BlogPost = ({ post: initialPost, onReactionChange }) => {
   const [post, setPost] = useState(initialPost);
   const [isReacting, setIsReacting] = useState(false);
   const { currentUser } = useAuth();
-  const { showSuccess, showError } = useAlert();
+  const { showError } = useAlert();
   
   // Update post if the props change
   useEffect(() => {
@@ -21,10 +22,22 @@ const BlogPost = ({ post: initialPost, onReactionChange }) => {
     setExpanded(prev => !prev);
   };
 
-  // Format the timestamp (handling cases where timestamp might not be available yet)
-  const formattedTime = post.createdAt 
-    ? formatDistanceToNow(new Date(post.createdAt.toDate()), { addSuffix: true })
-    : 'just now';
+  // Custom time formatter
+  const formatTime = (timestamp) => {
+    if (!timestamp) return 'just now';
+    
+    const formatted = formatDistanceToNow(new Date(timestamp.toDate()), { addSuffix: true });
+    
+    // Replace "in less than a minute" with "less than a minute ago" if needed
+    if (formatted === "in less than a minute") {
+      return "less than a minute ago";
+    }
+    
+    return formatted;
+  };
+
+  // Format the timestamp
+  const formattedTime = post.createdAt ? formatTime(post.createdAt) : 'just now';
 
   // Check if the current user has liked or disliked this blog
   const userLiked = post.likedBy?.includes(currentUser?.uid);
