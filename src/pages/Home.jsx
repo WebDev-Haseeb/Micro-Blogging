@@ -13,7 +13,7 @@ const Home = () => {
   const [lastDoc, setLastDoc] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const { currentUser } = useAuth();
-  const postsPerPage = 10;
+  const postsPerPage = 5;
 
   const fetchPosts = useCallback(async (lastVisible = null) => {
     try {
@@ -77,7 +77,7 @@ const Home = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <span className="gradient-text">Latest</span> Posts
+        <span className="gradient-text">Latest</span> Blogs
       </motion.h1>
 
       {initialLoad && loading ? (
@@ -119,7 +119,7 @@ const Home = () => {
                     </svg>
                     Loading...
                   </div>
-                ) : "Load more posts"}
+                ) : "Load more blogs"}
               </button>
             </div>
           )}
