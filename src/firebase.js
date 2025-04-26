@@ -56,8 +56,7 @@ export const addBlogPost = async (user, content) => {
       likes: 0,
       dislikes: 0,
       likedBy: [],
-      dislikedBy: [],
-      comments: []
+      dislikedBy: []
     });
     return docRef.id;
   } catch (error) {
@@ -98,117 +97,76 @@ export const getUserPosts = async (userId) => {
   }
 };
 
-// Like a post
-export const likePost = async (postId, userId) => {
+// Improved reaction function to handle both like and dislike
+export const reactToPost = async (postId, userId, reactionType) => {
   try {
     const postRef = doc(db, "posts", postId);
+    
+    // Get the full post data
     const postSnap = await getDoc(postRef);
     
-    if (postSnap.exists()) {
-      const postData = postSnap.data();
-      
-      // Check if user already liked this post
-      const likedBy = postData.likedBy || [];
-      const dislikedBy = postData.dislikedBy || [];
-      
+    if (!postSnap.exists()) {
+      throw new Error(`Post with ID ${postId} not found`);
+    }
+    
+    const postData = postSnap.data();
+    const likedBy = postData.likedBy || [];
+    const dislikedBy = postData.dislikedBy || [];
+    
+    const updates = {};
+    
+    if (reactionType === 'like') {
+      // User wants to like the post
       if (likedBy.includes(userId)) {
-        // User already liked, so remove the like
-        await updateDoc(postRef, {
-          likedBy: arrayRemove(userId),
-          likes: increment(-1)
-        });
-        return { action: 'removed' };
+        // User already liked, remove the like (toggle off)
+        updates.likedBy = arrayRemove(userId);
+        updates.likes = increment(-1);
       } else {
-        // Add like and remove dislike if exists
-        const updates = {
-          likedBy: arrayUnion(userId),
-          likes: increment(1)
-        };
+        // Add like
+        updates.likedBy = arrayUnion(userId);
+        updates.likes = increment(1);
         
         // If user had disliked before, remove the dislike
         if (dislikedBy.includes(userId)) {
-          await updateDoc(postRef, {
-            dislikedBy: arrayRemove(userId),
-            dislikes: increment(-1)
-          });
+          updates.dislikedBy = arrayRemove(userId);
+          updates.dislikes = increment(-1);
         }
-        
-        await updateDoc(postRef, updates);
-        return { action: 'added' };
       }
-    }
-  } catch (error) {
-    console.error("Error liking post:", error);
-    throw error;
-  }
-};
-
-// Dislike a post
-export const dislikePost = async (postId, userId) => {
-  try {
-    const postRef = doc(db, "posts", postId);
-    const postSnap = await getDoc(postRef);
-    
-    if (postSnap.exists()) {
-      const postData = postSnap.data();
-      
-      // Check if user already disliked this post
-      const likedBy = postData.likedBy || [];
-      const dislikedBy = postData.dislikedBy || [];
-      
+    } else if (reactionType === 'dislike') {
+      // User wants to dislike the post
       if (dislikedBy.includes(userId)) {
-        // User already disliked, so remove the dislike
-        await updateDoc(postRef, {
-          dislikedBy: arrayRemove(userId),
-          dislikes: increment(-1)
-        });
-        return { action: 'removed' };
+        // User already disliked, remove the dislike (toggle off)
+        updates.dislikedBy = arrayRemove(userId);
+        updates.dislikes = increment(-1);
       } else {
-        // Add dislike and remove like if exists
-        const updates = {
-          dislikedBy: arrayUnion(userId),
-          dislikes: increment(1)
-        };
+        // Add dislike
+        updates.dislikedBy = arrayUnion(userId);
+        updates.dislikes = increment(1);
         
         // If user had liked before, remove the like
         if (likedBy.includes(userId)) {
-          await updateDoc(postRef, {
-            likedBy: arrayRemove(userId),
-            likes: increment(-1)
-          });
+          updates.likedBy = arrayRemove(userId);
+          updates.likes = increment(-1);
         }
-        
-        await updateDoc(postRef, updates);
-        return { action: 'added' };
       }
     }
-  } catch (error) {
-    console.error("Error disliking post:", error);
-    throw error;
-  }
-};
-
-// Add a comment to a post
-export const addComment = async (postId, user, content) => {
-  try {
-    const postRef = doc(db, "posts", postId);
     
-    const commentData = {
-      userId: user.uid,
-      displayName: user.displayName,
-      photoURL: user.photoURL,
-      content: content,
-      createdAt: serverTimestamp()
+    // Wait for the update to complete to ensure persistence
+    await updateDoc(postRef, updates);
+    
+    // For UI update, we'll just return the reaction type
+    // The component will handle the UI updates optimistically
+    return { 
+      success: true,
+      postId,
+      reactionType,
+      action: reactionType === 'like' 
+        ? (likedBy.includes(userId) ? 'removed' : 'added')
+        : (dislikedBy.includes(userId) ? 'removed' : 'added')
     };
-    
-    await updateDoc(postRef, {
-      comments: arrayUnion(commentData)
-    });
-    
-    return commentData;
   } catch (error) {
-    console.error("Error adding comment:", error);
-    throw error;
+    console.error(`Error with ${reactionType} reaction:`, error);
+    throw error; // Make sure to propagate the error
   }
 };
 

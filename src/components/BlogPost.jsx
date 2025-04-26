@@ -1,24 +1,24 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
-import { likePost, dislikePost, addComment } from '../firebase';
+import { reactToPost } from '../firebase';
 import { useAlert } from '../contexts/AlertContext';
 
-const BlogPost = ({ post }) => {
+const BlogPost = ({ post: initialPost, onReactionChange }) => {
   const [expanded, setExpanded] = useState(false);
-  const [showComments, setShowComments] = useState(false);
-  const [comment, setComment] = useState('');
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [post, setPost] = useState(initialPost);
+  const [isReacting, setIsReacting] = useState(false);
   const { currentUser } = useAuth();
   const { showSuccess, showError } = useAlert();
   
+  // Update post if the props change
+  useEffect(() => {
+    setPost(initialPost);
+  }, [initialPost]);
+  
   const toggleExpand = () => {
     setExpanded(prev => !prev);
-  };
-
-  const toggleComments = () => {
-    setShowComments(prev => !prev);
   };
 
   // Format the timestamp (handling cases where timestamp might not be available yet)
@@ -30,59 +30,84 @@ const BlogPost = ({ post }) => {
   const userLiked = post.likedBy?.includes(currentUser?.uid);
   const userDisliked = post.dislikedBy?.includes(currentUser?.uid);
 
-  const handleLike = async () => {
+  const handleReaction = async (reactionType) => {
     if (!currentUser) {
-      showError('Please sign in to like posts', 3000);
+      showError(`Please sign in to ${reactionType} posts`, 3000);
       return;
     }
+
+    // Prevent multiple rapid clicks
+    if (isReacting) return;
 
     try {
-      await likePost(post.id, currentUser.uid);
+      setIsReacting(true);
+      
+      // Create optimistic update for UI
+      const newPost = { ...post };
+      
+      if (reactionType === 'like') {
+        if (userLiked) {
+          // Remove like
+          newPost.likes = Math.max(0, (post.likes || 0) - 1);
+          newPost.likedBy = post.likedBy.filter(id => id !== currentUser.uid);
+        } else {
+          // Add like
+          newPost.likes = (post.likes || 0) + 1;
+          newPost.likedBy = [...(post.likedBy || []), currentUser.uid];
+          
+          // Remove dislike if exists
+          if (userDisliked) {
+            newPost.dislikes = Math.max(0, (post.dislikes || 0) - 1);
+            newPost.dislikedBy = post.dislikedBy.filter(id => id !== currentUser.uid);
+          }
+        }
+      } else { // dislike
+        if (userDisliked) {
+          // Remove dislike
+          newPost.dislikes = Math.max(0, (post.dislikes || 0) - 1);
+          newPost.dislikedBy = post.dislikedBy.filter(id => id !== currentUser.uid);
+        } else {
+          // Add dislike
+          newPost.dislikes = (post.dislikes || 0) + 1;
+          newPost.dislikedBy = [...(post.dislikedBy || []), currentUser.uid];
+          
+          // Remove like if exists
+          if (userLiked) {
+            newPost.likes = Math.max(0, (post.likes || 0) - 1);
+            newPost.likedBy = post.likedBy.filter(id => id !== currentUser.uid);
+          }
+        }
+      }
+      
+      // Update local state immediately for responsive UI
+      setPost(newPost);
+      
+      // Notify parent component
+      if (onReactionChange) {
+        onReactionChange(newPost);
+      }
+      
+      // Send to the server and wait for confirmation
+      await reactToPost(post.id, currentUser.uid, reactionType);
     } catch (error) {
-      showError('Failed to like post', 3000);
-      console.error('Error liking post:', error);
-    }
-  };
-
-  const handleDislike = async () => {
-    if (!currentUser) {
-      showError('Please sign in to dislike posts', 3000);
-      return;
-    }
-
-    try {
-      await dislikePost(post.id, currentUser.uid);
-    } catch (error) {
-      showError('Failed to dislike post', 3000);
-      console.error('Error disliking post:', error);
-    }
-  };
-
-  const handleCommentSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!currentUser) {
-      showError('Please sign in to comment', 3000);
-      return;
-    }
-
-    if (!comment.trim()) {
-      showError('Comment cannot be empty', 3000);
-      return;
-    }
-
-    try {
-      setIsSubmittingComment(true);
-      await addComment(post.id, currentUser, comment);
-      setComment('');
-      showSuccess('Comment added successfully', 3000);
-    } catch (error) {
-      showError('Failed to add comment', 3000);
-      console.error('Error adding comment:', error);
+      console.error(`Error ${reactionType}ing post:`, error);
+      
+      // Revert to original state on error
+      setPost(initialPost);
+      
+      // Notify parent component of error
+      if (onReactionChange) {
+        onReactionChange(initialPost);
+      }
+      
+      showError(`Failed to ${reactionType} post. Please try again.`, 3000);
     } finally {
-      setIsSubmittingComment(false);
+      setIsReacting(false);
     }
   };
+
+  const handleLike = () => handleReaction('like');
+  const handleDislike = () => handleReaction('dislike');
 
   return (
     <motion.div 
@@ -140,11 +165,12 @@ const BlogPost = ({ post }) => {
             {/* Like button */}
             <button 
               onClick={handleLike}
+              disabled={isReacting}
               className={`flex items-center gap-1 rounded-md px-2 py-1 text-sm ${
                 userLiked 
                   ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' 
                   : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800/50'
-              }`}
+              } ${isReacting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -162,11 +188,12 @@ const BlogPost = ({ post }) => {
             {/* Dislike button */}
             <button 
               onClick={handleDislike}
+              disabled={isReacting}
               className={`flex items-center gap-1 rounded-md px-2 py-1 text-sm ${
                 userDisliked 
                   ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' 
                   : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800/50'
-              }`}
+              } ${isReacting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -180,104 +207,9 @@ const BlogPost = ({ post }) => {
               </svg>
               <span>{post.dislikes || 0}</span>
             </button>
-            
-            {/* Comment button */}
-            <button 
-              onClick={toggleComments}
-              className="flex items-center gap-1 rounded-md px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800/50"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
-              </svg>
-              <span>{(post.comments?.length) || 0}</span>
-            </button>
           </div>
         </div>
       </div>
-      
-      {/* Comments section */}
-      <AnimatePresence>
-        {showComments && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="border-t border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50"
-          >
-            <div className="p-4">
-              <h4 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                {post.comments?.length 
-                  ? `Comments (${post.comments.length})` 
-                  : 'No comments yet'
-                }
-              </h4>
-              
-              {/* Comment form */}
-              {currentUser && (
-                <form onSubmit={handleCommentSubmit} className="mb-4">
-                  <div className="flex gap-3">
-                    <img 
-                      src={currentUser.photoURL} 
-                      alt={currentUser.displayName} 
-                      className="h-8 w-8 rounded-full"
-                    />
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        placeholder="Add a comment..."
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400/50"
-                        value={comment}
-                        onChange={(e) => setComment(e.target.value)}
-                        disabled={isSubmittingComment}
-                      />
-                      <div className="mt-2 flex justify-end">
-                        <button
-                          type="submit"
-                          disabled={isSubmittingComment || !comment.trim()}
-                          className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400 dark:bg-blue-500 dark:hover:bg-blue-600 dark:disabled:bg-blue-500/50"
-                        >
-                          {isSubmittingComment ? 'Posting...' : 'Post'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </form>
-              )}
-              
-              {/* Comment list */}
-              <div className="space-y-4">
-                {post.comments?.length > 0 && post.comments.map((comment, index) => (
-                  <div key={index} className="flex gap-3">
-                    <img 
-                      src={comment.photoURL} 
-                      alt={comment.displayName} 
-                      className="h-8 w-8 rounded-full"
-                    />
-                    <div className="flex-1">
-                      <div className="rounded-lg bg-white p-3 shadow-sm dark:bg-gray-700">
-                        <div className="flex items-center gap-2">
-                          <h5 className="text-sm font-medium text-gray-900 dark:text-white">
-                            {comment.displayName}
-                          </h5>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {comment.createdAt 
-                              ? formatDistanceToNow(new Date(comment.createdAt.toDate()), { addSuffix: true }) 
-                              : 'just now'
-                            }
-                          </span>
-                        </div>
-                        <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                          {comment.content}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 };

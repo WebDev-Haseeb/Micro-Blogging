@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BlogPost from '../components/BlogPost';
 import Loading from '../components/Loading';
@@ -15,31 +15,37 @@ const Home = () => {
   const { currentUser } = useAuth();
   const postsPerPage = 10;
 
+  const fetchPosts = useCallback(async (lastVisible = null) => {
+    try {
+      if (!lastVisible) setLoading(true);
+      const result = await getPaginatedPosts(lastVisible, postsPerPage);
+      return result;
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      return { posts: [], lastDoc: null };
+    } finally {
+      setLoading(false);
+      setInitialLoad(false);
+    }
+  }, [postsPerPage]);
+
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        setLoading(true);
-        const result = await getPaginatedPosts(null, postsPerPage);
-        setPosts(result.posts);
-        setLastDoc(result.lastDoc);
-        setHasMore(result.posts.length === postsPerPage);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-      } finally {
-        setLoading(false);
-        setInitialLoad(false);
-      }
+    const loadInitialPosts = async () => {
+      const result = await fetchPosts();
+      setPosts(result.posts);
+      setLastDoc(result.lastDoc);
+      setHasMore(result.posts.length === postsPerPage);
     };
 
-    fetchPosts();
-  }, []);
+    loadInitialPosts();
+  }, [fetchPosts]);
 
   const loadMorePosts = async () => {
     if (!hasMore || loadingMore) return;
     
     try {
       setLoadingMore(true);
-      const result = await getPaginatedPosts(lastDoc, postsPerPage);
+      const result = await fetchPosts(lastDoc);
       
       if (result.posts.length > 0) {
         setPosts(prevPosts => [...prevPosts, ...result.posts]);
@@ -53,6 +59,15 @@ const Home = () => {
       setLoadingMore(false);
     }
   };
+
+  // Handle post reaction changes
+  const handlePostReactionChange = useCallback((updatedPost) => {
+    setPosts(prevPosts => 
+      prevPosts.map(post => 
+        post.id === updatedPost.id ? { ...post, ...updatedPost } : post
+      )
+    );
+  }, []);
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-8">
@@ -79,7 +94,10 @@ const Home = () => {
                   exit={{ opacity: 0, y: 20 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                 >
-                  <BlogPost post={post} />
+                  <BlogPost 
+                    post={post} 
+                    onReactionChange={handlePostReactionChange}
+                  />
                 </motion.div>
               ))}
             </AnimatePresence>
