@@ -15,6 +15,7 @@
 
   ::-webkit-scrollbar-track {
     @apply bg-gray-200 dark:bg-gray-800;
+    border-radius: 5px;
   }
 
   ::-webkit-scrollbar-thumb {
