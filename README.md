@@ -1,7 +1,5 @@
 # Smart MicroBlog
 
-![Smart MicroBlog Logo](public/favicon.svg)
-
 A modern, SEO-optimized microblogging platform that allows users to share concise thoughts with AI-powered insights and social interactions. Built with React, Firebase, and Gemini AI.
 
 ## 🌟 Features
@@ -41,8 +39,8 @@ Smart MicroBlog implements modern SEO best practices:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/smart-microblog.git
-   cd smart-microblog
+   git clone https://github.com/WebDev-Haseeb/Micro-Blogging.git
+   cd Micro-Blogging
    ```
 
 2. **Install dependencies**:
@@ -143,10 +141,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact & Support
 
-- **Website**: [https://smartmicroblog.com](https://smartmicroblog.com)
-- **Email**: support@smartmicroblog.com
-- **Twitter**: [@SmartMicroBlog](https://twitter.com/SmartMicroBlog)
+- **Website**: [https://micro--blogging.web.app/](https://micro--blogging.web.app/)
+- **Email**: contact@devhaseeb.me
 
 ---
 
-<p align="center">Made with ❤️ by the Smart MicroBlog Team</p>
+<p align="center">Made with ❤️ by the Haseeb</p>
