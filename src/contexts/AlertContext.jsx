@@ -40,7 +40,7 @@ export const AlertProvider = ({ children }) => {
     
     // Vertical positioning
     if (position.vertical === 'top') {
-      classes += ' top-0';
+      classes += ' top-0 mt-16';
     } else {
       classes += ' bottom-0';
     }

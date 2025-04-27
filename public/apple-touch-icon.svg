@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <rect width="180" height="180" rx="60" fill="#4f46e5" />
+  <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#6366f1" />
+    <stop offset="100%" stop-color="#9333ea" />
+  </linearGradient>
+  <rect width="180" height="180" rx="60" fill="url(#grad)" />
+  <text x="90" y="115" font-family="Arial, sans-serif" font-size="100" font-weight="bold" text-anchor="middle" fill="white">SM</text>
+</svg> 

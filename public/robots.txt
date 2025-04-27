@@ -1,0 +1,11 @@
+# Allow all web crawlers
+User-agent: *
+Allow: /
+
+# Sitemap location (update with your actual domain when deployed)
+Sitemap: https://smartmicroblog.com/sitemap.xml
+
+# Disallow crawling of authentication paths
+Disallow: /login
+Disallow: /logout
+Disallow: /signup 

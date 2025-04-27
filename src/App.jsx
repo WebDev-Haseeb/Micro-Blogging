@@ -11,16 +11,59 @@ import MyPosts from './pages/MyPosts';
 import NotFound from './pages/NotFound';
 import AlertDemo from './pages/AlertDemo';
 import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+// eslint-disable-next-line
+import { AnimatePresence } from 'framer-motion';
 
 function App() {
-  // Add meta tags for PWA
+  // Add meta tags for SEO and PWA
   useEffect(() => {
-    document.title = 'Smart MicroBlog';
+    // Set document title with primary keyword
+    document.title = 'Smart MicroBlog | Share Short Thoughts with AI Insights';
+    
+    // Meta description with keywords and call to action
     const metaDescription = document.createElement('meta');
     metaDescription.name = 'description';
-    metaDescription.content = 'Share your thoughts in 300 characters or less with AI-powered insights';
+    metaDescription.content = 'Create and share micro blog posts in 300 characters or less. Smart MicroBlog offers AI-powered insights, multiple writing tones, and seamless social interactions. Join today!';
     document.head.appendChild(metaDescription);
+    
+    // Keywords meta tag
+    const metaKeywords = document.createElement('meta');
+    metaKeywords.name = 'keywords';
+    metaKeywords.content = 'microblogging, AI writing assistant, short form content, blog insights, social writing platform, content analysis';
+    document.head.appendChild(metaKeywords);
+    
+    // Open Graph tags for social sharing
+    const ogTitle = document.createElement('meta');
+    ogTitle.property = 'og:title';
+    ogTitle.content = 'Smart MicroBlog | Short-Form Content with AI Insights';
+    document.head.appendChild(ogTitle);
+    
+    const ogDescription = document.createElement('meta');
+    ogDescription.property = 'og:description';
+    ogDescription.content = 'Express your thoughts in 300 characters with AI-powered tone analysis and recommendations. Connect with writers on Smart MicroBlog.';
+    document.head.appendChild(ogDescription);
+    
+    const ogType = document.createElement('meta');
+    ogType.property = 'og:type';
+    ogType.content = 'website';
+    document.head.appendChild(ogType);
+    
+    // Twitter Card tags
+    const twitterCard = document.createElement('meta');
+    twitterCard.name = 'twitter:card';
+    twitterCard.content = 'summary_large_image';
+    document.head.appendChild(twitterCard);
+    
+    const twitterTitle = document.createElement('meta');
+    twitterTitle.name = 'twitter:title';
+    twitterTitle.content = 'Smart MicroBlog | AI-Enhanced Micro Content Platform';
+    document.head.appendChild(twitterTitle);
+    
+    // Canonical URL to prevent duplicate content issues
+    const canonicalLink = document.createElement('link');
+    canonicalLink.rel = 'canonical';
+    canonicalLink.href = window.location.href.split('?')[0];
+    document.head.appendChild(canonicalLink);
   }, []);
 
   return (

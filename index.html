@@ -2,12 +2,47 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Smart MicroBlogging </title>
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="author" content="Smart MicroBlog Team" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Generated title will be replaced by React app but we set a fallback -->
+    <title>Smart MicroBlog | Express Your Thoughts in 300 Characters or Less</title>
+    
+    <!-- Structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Smart MicroBlog",
+        "url": "https://smartmicroblog.com",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://smartmicroblog.com/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
+    
+    <!-- Preconnect to important domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <div style="text-align: center; padding: 2rem;">
+        <h1>Smart MicroBlog</h1>
+        <p>Please enable JavaScript to use this application.</p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

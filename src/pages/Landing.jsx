@@ -1,9 +1,47 @@
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const Landing = () => {
   const { currentUser, login, loading } = useAuth();
+
+  // Add structured data for SEO
+  useEffect(() => {
+    // Create JSON-LD structured data for better SEO
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Smart MicroBlog",
+      "applicationCategory": "SocialApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "A cutting-edge microblogging platform with AI-powered content analysis and rewriting capabilities.",
+      "featureList": [
+        "300 character limit posts",
+        "AI tone analysis",
+        "Multiple writing tone options",
+        "User authentication",
+        "Social interactions"
+      ]
+    };
+
+    // Add structured data to page
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(structuredData);
+    document.head.appendChild(script);
+
+    // Clean up
+    return () => {
+      const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+      scripts.forEach(script => document.head.removeChild(script));
+    };
+  }, []);
 
   // If user is logged in, redirect to the homepage
   if (currentUser) {
@@ -46,7 +84,7 @@ const Landing = () => {
       <div className="relative container mx-auto px-4 py-16 sm:px-6 sm:py-24 lg:py-32">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-8">
           
-          {/* Text content */}
+          {/* Text content with improved SEO structure using h1, h2 headers */}
           <div className="max-w-lg sm:mx-auto lg:mx-0">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -56,9 +94,14 @@ const Landing = () => {
               <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
                 Welcome to <span className="gradient-text">Smart</span> MicroBlog
               </h1>
-              <p className="mt-6 text-xl leading-8 text-gray-600 dark:text-gray-300">
-                Share your thoughts in 300 characters or less. Get instant AI-powered insights on your writing, and connect with others.
-              </p>
+              <h2 className="mt-6 text-xl leading-8 text-gray-600 dark:text-gray-300">
+                Share your thoughts in 300 characters or less with AI-powered insights
+              </h2>
+              
+              <div className="mt-4 text-base text-gray-600 dark:text-gray-400">
+                <p>Smart MicroBlog is the premier platform for concise content creation, featuring advanced AI analysis that helps you refine your writing and engage with your audience more effectively.</p>
+              </div>
+              
               <div className="mt-10 flex items-center gap-x-6">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -71,13 +114,14 @@ const Landing = () => {
               </div>
               
               <div className="mt-12 space-y-6 text-base text-gray-600 dark:text-gray-400">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Key Features:</h3>
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
                     <svg className="h-6 w-6 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <p className="ml-3">Quick thoughts in 300 characters or less</p>
+                  <p className="ml-3"><strong>Concise Content:</strong> Express your thoughts in 300 characters or less</p>
                 </div>
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
@@ -85,7 +129,7 @@ const Landing = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <p className="ml-3">AI-powered analysis of your writing</p>
+                  <p className="ml-3"><strong>AI Analytics:</strong> Tone, clarity, sentiment and content analysis</p>
                 </div>
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
@@ -93,7 +137,15 @@ const Landing = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <p className="ml-3">Rewrite your posts in different tones</p>
+                  <p className="ml-3"><strong>Content Rewriting:</strong> Transform your posts with different tones (formal, informal, humorous)</p>
+                </div>
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="ml-3"><strong>Social Engagement:</strong> Connect with other writers through reactions and feedback</p>
                 </div>
               </div>
             </motion.div>
